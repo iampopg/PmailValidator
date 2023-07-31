@@ -31,4 +31,5 @@ Is supported on all OS
 FOR EDUCATIONALPURPOSE
 
 Please report to this email incase of any error
-email:iampopg@protonmail.com
+email:iampopg@proton.me
+all_media='iampopg'
