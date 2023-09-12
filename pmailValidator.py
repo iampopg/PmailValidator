@@ -2,6 +2,10 @@ import requests
 from colorama import init, Fore
 from yahoo import yahoo
 from outlook import outlook
+import threading
+import concurrent.futures
+
+
 init(autoreset=True)
 
 red = Fore.RED
@@ -61,6 +65,37 @@ def send_request(email):
             print(red + f"Invalid => {email}")
     except Exception as e:
         print(f"Error for {email}: {e}")
+def process_emails(emails):
+    with concurrent.futures.ThreadPoolExecutor() as executor:
+        futures = [executor.submit(process_email, email) for email in emails]
+        concurrent.futures.wait(futures)
+
+def process_email(email):
+    email = email.strip()
+    
+    # for yahoo mail
+    if email.split("@")[1] == 'yahoo.com':
+        response = yahoo(email)
+        if response == 'valid':
+            with open('valid.txt', 'a') as valid_file:
+                valid_file.write(f"{email}\n")
+                print(green + f"Valid => {email}")
+        else:
+            print(red + f"Invalid => {email}")
+        
+    # for outlook
+    elif email.split("@")[1] == 'outlook.com':
+        response = outlook(email)
+        if response == 'valid':
+            with open('valid.txt', 'a') as valid_file:
+                valid_file.write(f"{email}\n")
+                print(green + f"Valid => {email}")
+        else:
+            print(red + f"Invalid => {email}")
+    
+    # for other email
+    else:
+        send_request(email)
 
 def main():
     try:
@@ -69,40 +104,15 @@ def main():
         with open(file_path, 'r') as file:
             emails = file.readlines()
 
-        for email in emails:
-            email = email.strip()
-            
-            #for yahooo mail
-            if email.split("@")[1] == 'yahoo.com':
-                response = yahoo(email)
-                # print(response)
-                if response == 'valid':
-                    with open('valid.txt', 'a') as valid_file:
-                        valid_file.write(f"{email}\n")
-                        print(green + f"Valid => {email}")
-                else:
-                    print(red + f"Invalid => {email}")
-                    
-            #for outlook
-            elif email.split("@")[1] == 'outlook.com':
-                response = outlook(email)
-                # print(response)
-                # print(response)
-                if response == 'valid':
-                    with open('valid.txt', 'a') as valid_file:
-                        valid_file.write(f"{email}\n")
-                        print(green + f"Valid => {email}")
-                else:
-                    print(red + f"Invalid => {email}")
-            
-            
-            #for other email
-            else:
-                send_request(email)
+        chunk_size = 10
+        for i in range(0, len(emails), chunk_size):
+            chunk = emails[i:i+chunk_size]
+            process_emails(chunk)
 
         print(yellow + "Valid once saved in valid email.txt..")
     except Exception as e:
         print(f"Error: {e}")
 
 if __name__ == "__main__":
+    init(autoreset=True)
     main()
