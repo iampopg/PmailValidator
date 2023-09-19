@@ -16,6 +16,14 @@ yellow = Fore.YELLOW
 cyan = Fore.CYAN
 background = white + green
 
+print()
+print(blue+ '''
+      
+      Coded by Pop(G)
+                    Blackcteam
+      ''')
+print()
+
 def send_request(email):
     url = "https://app.woodpecker.co/sign-up/create-account"
 
@@ -66,7 +74,7 @@ def send_request(email):
     except Exception as e:
         print(f"Error for {email}: {e}")
 def process_emails(emails):
-    with concurrent.futures.ThreadPoolExecutor() as executor:
+    with concurrent.futures.ThreadPoolExecutor(max_workers=20) as executor:
         futures = [executor.submit(process_email, email) for email in emails]
         concurrent.futures.wait(futures)
 
@@ -74,17 +82,19 @@ def process_email(email):
     email = email.strip()
     
     # for yahoo mail
-    if email.split("@")[1] == 'yahoo.com':
+    if email.split("@")[1] == 'yahoo.com' or email.split("@")[1] == 'myyahoo.com':
         response = yahoo(email)
         if response == 'valid':
             with open('valid.txt', 'a') as valid_file:
                 valid_file.write(f"{email}\n")
                 print(green + f"Valid => {email}")
+        elif response == 'Yahoo data':
+            print(yellow+f"unable to verify => {email}")
         else:
             print(red + f"Invalid => {email}")
         
     # for outlook
-    elif email.split("@")[1] == 'outlook.com':
+    elif email.split("@")[1] == 'outlook.com' or email.split("@")[1] == 'hotmail.com':
         response = outlook(email)
         if response == 'valid':
             with open('valid.txt', 'a') as valid_file:
