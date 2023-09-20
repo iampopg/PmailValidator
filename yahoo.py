@@ -44,7 +44,10 @@ def yahoo(email):
         
     elif 'messages.ERROR_NOTFOUND' in response.text:
         return('Yahoo data')
+    elif 'rate limited' in response.text:
+        return('Limited rate')
     else:
+        print(response.text)
         return('valid')
     
 # yahoo('sawdyk123@yahoo.com')

@@ -2,7 +2,7 @@ import requests
 from colorama import init, Fore
 from yahoo import yahoo
 from outlook import outlook
-import threading
+import threading, sys, os
 import concurrent.futures
 
 init(autoreset=True)
@@ -64,11 +64,11 @@ def send_request(email):
     try:
         response = requests.post(url, json=payload, headers=headers)
         if "email_invalid" not in response.text:
-            with open('valid.txt', 'a') as valid_file:
+            with open('result/valid.txt', 'a') as valid_file:
                 valid_file.write(f"{email}\n")
                 print(green + f"[{counter}] Valid => {email}")
         else:
-            with open('invalid.txt', 'a') as valid_file:
+            with open('result/invalid.txt', 'a') as valid_file:
                 valid_file.write(f"{email}\n")
                 print(red + f"[{counter}] Invalid => {email}")
     except Exception as e:
@@ -87,24 +87,30 @@ def process_email(email, counter):
     if email.split("@")[1] == 'yahoo.com' or email.split("@")[1] == 'myyahoo.com':
         response = yahoo(email)
         if response == 'valid':
-            with open('valid.txt', 'a') as valid_file:
+            with open('result/valid.txt', 'a') as valid_file:
                 valid_file.write(f"{email}\n")
                 print(green + f"[{counter}] Valid => {email}")
         elif response == 'Yahoo data':
             print(yellow+f"[{counter}] Unable to verify => {email}")
+            with open('result/unknown', 'w') as w:
+                w.write(f"{email}\n")
+        elif response == 'Limited rate':
+            print(yellow+f"[{counter}] Limit Yahoo rate(use proxy/vpn) => {email}")
+            with open('result/unknown', 'w') as w:
+                w.write(f"{email}\n")git 
         else:
-            with open('invalid.txt', 'a') as valid_file:
+            with open('result/invalid.txt', 'a') as valid_file:
                 valid_file.write(f"{email}\n")
                 print(red + f"[{counter}] Invalid => {email}")
 
     elif email.split("@")[1] == 'outlook.com' or email.split("@")[1] == 'hotmail.com':
         response = outlook(email)
         if response == 'valid':
-            with open('valid.txt', 'a') as valid_file:
+            with open('result/valid.txt', 'a') as valid_file:
                 valid_file.write(f"{email}\n")
                 print(green + f"[{counter}] Valid => {email}")
         else:
-            with open('invalid.txt', 'a') as valid_file:
+            with open('result/invalid.txt', 'a') as valid_file:
                 valid_file.write(f"{email}\n")
                 print(red + f"[{counter}] Invalid => {email}")
 
@@ -113,9 +119,12 @@ def process_email(email, counter):
 
 def main():
     try:
+        if not os.path.exists('result'):
+            os.makedirs('result')
+            
         global counter
         counter = 1  # Initialize counter
-        file_path = input(blue+ "Enter the path to the file containing emails: ")
+        file_path = input(blue + "Enter the path to the file containing emails: ")
 
         with open(file_path, 'r') as file:
             emails = file.readlines()
@@ -124,12 +133,15 @@ def main():
             process_email(email, counter)
             counter += 1  # Increment counter after processing each email
 
-        print(yellow + "Valid emails saved in valid.txt..")
-        print(yellow + "Invalid emails saved in invalid.txt..")
+        print()
+        print(yellow + "Valid emails saved in result/valid.txt..")
+        print(yellow + "Invalid emails saved in result/invalid.txt..")
+    
     except Exception as e:
-        # print(f"Error: {e}")
+        print(f"Error: {e}")
         pass
 
 if __name__ == "__main__":
     init(autoreset=True)
     main()
+
