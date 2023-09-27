@@ -7,6 +7,7 @@ try:
     from concurrent.futures import ThreadPoolExecutor
     from tkinter import Tk
     from tkinter.filedialog import askopenfilename
+    
 except ModuleNotFoundError:
     import os, sys
     os.system('pip install requests')
