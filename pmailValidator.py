@@ -1,9 +1,19 @@
-import requests
-from colorama import init, Fore
-from yahoo import yahoo
-from outlook import outlook
-import threading, sys, os
-import concurrent.futures
+try:
+    import requests
+    from colorama import init, Fore
+    from yahoo import yahoo
+    from outlook import outlook
+    import threading, sys, os, time
+    from concurrent.futures import ThreadPoolExecutor
+    from tkinter import Tk
+    from tkinter.filedialog import askopenfilename
+except ModuleNotFoundError:
+    import os, sys
+    os.system('pip install requests')
+    os.system('pip install colorama')
+    print()
+    input('ALL requirements has being installed, Please try again')
+    sys.exit()
 
 init(autoreset=True)
 
@@ -15,6 +25,12 @@ yellow = Fore.YELLOW
 cyan = Fore.CYAN
 background = white + green
 
+
+if os.name == 'nt':
+    os.system('cls')
+else:
+    os.system('clear')
+    
 print()
 print(blue+ '''
       
@@ -74,16 +90,17 @@ def send_request(email):
     except Exception as e:
         print(f"Error for {email}: {e}")
 
-def process_emails(emails):
-    # global counter
-    with concurrent.futures.ThreadPoolExecutor(max_workers=64) as executor:
-        futures = [executor.submit(process_email, email) for email in emails]
-        concurrent.futures.wait(futures)
+# def process_emails(emails):
+#     # global counter
+#     with concurrent.futures.ThreadPoolExecutor(max_workers=64) as executor:
+#         futures = [executor.submit(process_email, email) for email in emails]
+#         concurrent.futures.wait(futures)
 
 
 def process_email(email, counter):
-    email = email.strip()
-
+    # email = email.strip()
+    counter +=1
+#yahoo
     if email.split("@")[1] == 'yahoo.com' or email.split("@")[1] == 'myyahoo.com':
         response = yahoo(email)
         if response == 'valid':
@@ -97,18 +114,23 @@ def process_email(email, counter):
         elif response == 'Limited rate':
             print(yellow+f"[{counter}] Limit Yahoo rate(use proxy/vpn) => {email}")
             with open('result/unknown', 'w') as w:
-                w.write(f"{email}\n")git 
+                w.write(f"{email}\n")
         else:
             with open('result/invalid.txt', 'a') as valid_file:
                 valid_file.write(f"{email}\n")
                 print(red + f"[{counter}] Invalid => {email}")
 
+#outlook and hotmail
     elif email.split("@")[1] == 'outlook.com' or email.split("@")[1] == 'hotmail.com':
         response = outlook(email)
         if response == 'valid':
             with open('result/valid.txt', 'a') as valid_file:
                 valid_file.write(f"{email}\n")
                 print(green + f"[{counter}] Valid => {email}")
+        elif response == "dead":
+            with open('result/dead.txt', 'a') as valid_file:
+                valid_file.write(f"{email}\n")
+            print(yellow + f"[{counter}] Dead => {email}")
         else:
             with open('result/invalid.txt', 'a') as valid_file:
                 valid_file.write(f"{email}\n")
@@ -116,24 +138,42 @@ def process_email(email, counter):
 
     else:
         send_request(email)
+def get_file_path():
+    root = Tk()
+    root.withdraw()
+    root.attributes('-topmost', True)
+    file_path = askopenfilename(filetypes=[("Text Files", "*")],title="Select email list file")
+    root.destroy()
+    return file_path
 
 def main():
     try:
+        
+        
+        
+        
         if not os.path.exists('result'):
             os.makedirs('result')
             
         global counter
         counter = 1  # Initialize counter
-        file_path = input(blue + "Enter the path to the file containing emails: ")
+        print("Choose your email file")
+        time.sleep(1)
+        file_path = get_file_path()
 
         with open(file_path, 'r') as file:
             emails = file.readlines()
+            counter +=1
+        with ThreadPoolExecutor(max_workers=30) as executor:
+            executor.map(lambda email: process_email(email.strip(), counter), emails)
+            # counter = 1
 
-        for email in emails:
-            process_email(email, counter)
-            counter += 1  # Increment counter after processing each email
+        # for email in emails:
+        #     process_email(email, counter)
+        #     counter += 1  # Increment counter after processing each email
 
         print()
+        print(f'{len(emails)} emails checked')
         print(yellow + "Valid emails saved in result/valid.txt..")
         print(yellow + "Invalid emails saved in result/invalid.txt..")
     
