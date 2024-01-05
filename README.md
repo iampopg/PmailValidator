@@ -32,4 +32,3 @@ FOR EDUCATIONALPURPOSE
 
 Please report to this email incase of any error
 email:iampopg@proton.me
-all_media='iampopg'
