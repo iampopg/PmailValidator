@@ -50,4 +50,3 @@ def yahoo(email):
         print(response.text)
         return('valid')
     
-# yahoo('sawdyk123@yahoo.com')
