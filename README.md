@@ -1,4 +1,4 @@
-# Email Validation (Outdated, Telegram @iampopg)
+# Email Validation (DISCONTINUED and Outdated, Telegram @iampopg)
 
 This script validates a list of email addresses and writes the valid ones to a file.
 
